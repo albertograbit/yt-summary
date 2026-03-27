@@ -1,0 +1,9 @@
+# Claude Code
+.claude/
+
+# Packaged skill files
+*.skill
+
+# OS
+Thumbs.db
+.DS_Store

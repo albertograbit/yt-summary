@@ -5,120 +5,177 @@ description: Search YouTube videos by topic, creator, and date range, then analy
 
 # YouTube Analyst with NotebookLM
 
-Search YouTube videos, analyze them through NotebookLM, and produce actionable briefings (not just summaries).
+Search YouTube videos, analyze them through NotebookLM, and produce actionable briefings.
+
+## Input/Output Contract
+
+**Input (via arguments or user message):**
+- `topic` (required): search terms
+- `creators` (optional): specific channels
+- `date_range` (optional, default: last 6 months)
+- `count` (optional, default: 5)
+- `output_path` (optional, default: current directory)
+- `format` (optional, default: both md+html)
+- `language` (optional, default: auto-detect from videos)
+- `--autonomous`: skip all interactive steps, use defaults, run end-to-end
+
+**Output (files generated):**
+- `{output_path}/analysis_YYYY_topic_slug.md`
+- `{output_path}/analysis_YYYY_topic_slug.html`
+- Prints to stdout: JSON summary with file paths, video count, notebook ID
+
+**Calling from another skill/agent:**
+1. Invoke `/yt-summary --autonomous topic="Claude Code" count=10 date_range="last week"`
+2. Read the generated files from the output path
+3. Do post-processing (branding, email, etc.)
+
+## Autonomous Mode
+
+When invoked with `--autonomous` in the arguments (or by another skill/agent), skip ALL interactive steps:
+- Do NOT ask for confirmation of video selection
+- Do NOT ask clarifying questions — use defaults for anything unspecified
+- Execute all steps end-to-end and generate output files
+- Only stop if a critical error occurs (auth expired, zero results after broadened search)
+
+When invoked interactively (no `--autonomous`), ask for confirmation at Step 3 and clarify ambiguous inputs.
 
 ## Workflow
 
-1. Parse user request (topic, creators, dates, count, format)
+1. Parse request
 2. Search YouTube via Firecrawl
-3. Validate, filter, and collect view counts
-4. **Always** create NotebookLM notebook with video URLs as sources
-5. Query NotebookLM for deep analysis with citations
-6. Generate action-oriented output files (Markdown + HTML)
+3. Validate, rank by views, select top N
+4. Create NotebookLM notebook with video URLs
+5. Query NotebookLM for deep analysis
+6. Generate action-oriented output files
+7. Print summary to stdout
 
 ## Step 1: Parse Request
 
-Extract from the user's message:
+Extract parameters from arguments or user message:
 
 | Parameter | Default | Notes |
 |-----------|---------|-------|
-| Topic/query | (required) | Main search terms |
-| Creators | (none) | Specific channels to filter |
-| Date range | Last 6 months | Convert relative dates to absolute |
-| Video count | 5 | How many to analyze |
-| Output format | both | `md`, `html`, or `both` |
-| Language | Auto-detect | Output language matches video language unless specified |
+| topic | (required) | Main search terms |
+| creators | (none) | Specific channels to filter |
+| date_range | Last 6 months | Convert relative dates to absolute |
+| count | 5 | How many to analyze |
+| output_path | cwd | Where to write files |
+| format | both | `md`, `html`, or `both` |
+| language | auto | Output language matches video language unless specified |
 
-If topic is unclear, ask before proceeding. If date range is ambiguous, ask.
+In autonomous mode: use defaults for anything not provided. Do not ask.
+In interactive mode: ask only if topic is missing or date range is ambiguous.
 
 ## Step 2: Search YouTube
 
-Use Firecrawl search to find YouTube videos. See [references/search-strategies.md](references/search-strategies.md) for query construction patterns.
+Use Firecrawl or WebSearch to find YouTube videos. See [references/search-strategies.md](references/search-strategies.md) for query patterns.
 
-**Search approach:**
 1. Build query: `site:youtube.com [creator filter] [topic] [date hints]`
-2. Execute search via Firecrawl with enough results to filter down to target count
-3. For each result, collect metadata: title, channel, date, duration, description, **view count**
+2. Execute 2-3 search variants to maximize coverage
+3. Collect metadata per result: title, channel, URL, date, description
 
-**View counts are mandatory.** Use the Return YouTube Dislike API (`returnyoutubedislikeapi.com/votes?videoId=VIDEO_ID`) or scrape from YouTube pages. View count is a key ranking signal.
+**View counts are mandatory.** Use the Return YouTube Dislike API (`returnyoutubedislikeapi.com/votes?videoId=VIDEO_ID`) or scrape from YouTube pages. View count is the primary ranking signal.
 
-**If Firecrawl is unavailable:** Use WebSearch as fallback with same query patterns.
+Fallback chain: Firecrawl -> WebSearch -> ask user for manual URLs (interactive only).
 
-Show the user a numbered list of found videos **ranked by views** and ask for confirmation before proceeding.
+## Step 3: Validate and Select
 
-## Step 3: Validate Results
+1. Filter: only YouTube video pages (no playlists, shorts, channels)
+2. Deduplicate by video ID
+3. Filter by date range
+4. Rank by view count (descending)
+5. Select top N videos
 
-Before analysis:
-- Verify URLs are YouTube video pages (not playlists, shorts, or channels)
-- Remove duplicates
-- Confirm videos fall within date range
-- **Rank by view count** - views signal community validation
-- If insufficient results, inform user and offer to broaden search or accept manual URLs
+In autonomous mode: proceed directly with top N. No confirmation.
+In interactive mode: show ranked list, ask for confirmation or edits.
+
+If fewer than N results after filtering:
+- Autonomous: proceed with what's available, note in output
+- Interactive: offer to broaden search or accept manual URLs
 
 ## Step 4: NotebookLM Analysis (REQUIRED)
 
-**This step is NOT optional.** Always create a NotebookLM notebook and add video URLs as sources.
+Always create a NotebookLM notebook and add video URLs as sources. Execute sequentially without pausing:
 
 ```bash
 # 1. Create notebook
 notebooklm create "[Topic] - YouTube Analysis [date]" --json
+# Parse notebook ID from output
 
-# 2. Add each video URL as source
-notebooklm source add "https://youtube.com/watch?v=VIDEO_ID" --json
-# Repeat for each video
+# 2. Add each video URL
+for each URL:
+  notebooklm source add "URL" --json
+  # Log success/failure, continue on individual failures
 
-# 3. Wait for sources to process (spawn background agent if many)
-notebooklm source list --json  # Check status
+# 3. Wait for processing
+# Check source list --json until all status=ready (poll every 10s, timeout 120s)
 
-# 4. Query for deep analysis
-notebooklm ask "For each video source, provide: (1) the 3 most actionable takeaways, (2) specific timestamps of the most valuable segments, (3) concrete things to implement based on the content. Focus on WHAT TO DO, not what the video says." --json
+# 4. Query for actionable analysis
+notebooklm ask "For each video source: (1) 3 most actionable takeaways, (2) specific timestamps of most valuable segments, (3) concrete tools/commands/configs demonstrated. Be specific." --json
 
-# 5. Follow-up queries
-notebooklm ask "What are the common implementation patterns across all videos? What should someone implement first, second, third?" --json
-notebooklm ask "Which videos contradict each other? Where do creators disagree?" --json
+# 5. Cross-video analysis
+notebooklm ask "Across ALL videos: (1) Top 5 things to implement in priority order, (2) Which videos contradict each other, (3) Common mistakes/warnings mentioned in multiple videos. Cite specific videos." --json
 ```
 
-**If NotebookLM auth is expired:** Ask user to run `! notebooklm login`, then retry.
-**If NotebookLM is completely unavailable:** Fall back to Firecrawl scraping + Claude analysis. Note in output that NotebookLM was not used.
+**Error handling (no interactive prompts):**
+- Auth expired: print error JSON `{"error": "notebooklm_auth_expired", "action": "run notebooklm login"}`, stop
+- Source add fails: log warning, continue with remaining sources
+- All sources fail: fall back to Claude direct analysis using scraped metadata
+- Query fails: retry once after 10s, then fall back to Claude analysis
 
-## Step 5: Generate Action-Oriented Output
+## Step 5: Generate Output
 
-Generate files in the current working directory (or user-specified path). See [references/output-templates.md](references/output-templates.md) for format guidance.
+Generate files at `{output_path}`. See [references/output-templates.md](references/output-templates.md) for format guidance.
 
-**The output must be ACTION-ORIENTED, not descriptive:**
+**Required sections (in order):**
+1. **TL;DR** - Top 3-5 actions based on video content
+2. **Ranking table** ordered by views, with priority badges and clips to watch
+3. **What to implement** - action cards with "why" (quote from transcript), "what to do", "reference video"
+4. **Debates/contradictions** detected by NotebookLM
+5. **Warnings** mentioned across multiple videos
+6. **Use cases** grouped by domain
+7. **What to skip** - save the reader's time
+8. **Context** - releases, news mentioned in videos
 
-### Required sections (in order):
-1. **TL;DR - Top 3 actions** to take this week based on video content
-2. **Ranking table** ordered by views, with priority badges and specific clips/timestamps to watch
-3. **What to implement** - concrete action cards with "why", "what to do", and "reference video + timestamp"
-4. **Use cases** extracted from videos, grouped by domain
-5. **What to skip/ignore** - save the reader's time
-6. **Context** - releases, news, or events mentioned across videos
-
-### Key principles:
-- View count is displayed prominently for every video
-- Every video has a **priority badge** (Alta/Media/Baja/Skip)
-- Every video has **specific clips** to watch (timestamps or time ranges), not "watch the whole thing"
-- Recommendations say WHAT TO DO, not what the video says
-- "Skip" recommendations are as valuable as "watch" recommendations
+**Key principles:**
+- View count displayed for every video
+- Priority badges: Imprescindible / Alta / Media / Baja / Skip
+- Specific clips to watch, not "watch the whole thing"
+- Transcript quotes from NotebookLM where available
+- "Skip" recommendations as valuable as "watch" recommendations
 
 **File naming:** `analysis_[YYYY]_[topic_slug].md` and `analysis_[YYYY]_[topic_slug].html`
+Topic slug: lowercase, spaces to underscores, max 30 chars.
 
-## Step 6: Report to User
+## Step 6: Output Summary
 
-After generating files, show:
-- File paths created
-- Number of videos analyzed
-- NotebookLM notebook URL/ID for further exploration
-- The TL;DR (top 3 actions) inline
+Print to stdout (parseable by calling agents):
+
+```json
+{
+  "status": "success",
+  "videos_analyzed": 8,
+  "videos_failed": 2,
+  "notebook_id": "uuid-here",
+  "files": [
+    "analysis_2026_claude_code.md",
+    "analysis_2026_claude_code.html"
+  ],
+  "tldr": ["Action 1", "Action 2", "Action 3"]
+}
+```
+
+In interactive mode, also show the TL;DR inline and file paths.
 
 ## Error Handling
 
+All errors produce structured output. No interactive prompts in autonomous mode.
+
 | Scenario | Action |
 |----------|--------|
-| Search returns no results | Broaden query, try without date filter, offer manual URL input |
-| Some videos inaccessible | Continue with accessible ones, note skipped videos in output |
-| NotebookLM auth expired | Ask user to run `! notebooklm login`, then retry |
-| NotebookLM completely unavailable | Fall back to Claude analysis, note limitation in output |
+| Search returns 0 results | Broaden query (remove date filter, simplify terms). If still 0: `{"error": "no_results"}` |
+| Some videos inaccessible | Continue with accessible ones. Note in output. |
+| NotebookLM auth expired | `{"error": "notebooklm_auth_expired", "action": "run notebooklm login"}` |
+| NotebookLM unavailable | Fall back to Claude analysis. Note `"notebooklm": false` in output. |
 | Firecrawl unavailable | Fall back to WebSearch |
-| View counts unavailable | Estimate from channel size, note as estimated |
+| View counts unavailable | Estimate from channel size. Note `"views_estimated": true` in output. |

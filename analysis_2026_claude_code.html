@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code: Que Ver, Que Implementar - Grabit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--purple:#754594;--red:#E52721;--dark-red:#C00000;--magenta:#BF1F79;--near-black:#36393B;--gray:#9D9C9C;--white:#FFF;--near-white:#F9F9F9;--pink:#FFD2DF;--lavender:#E6D5F4;--gradient:linear-gradient(135deg,#E52721,#BF1F79,#754594);--g1:#FE1D60;--g2:#ED2992;--g3:#C82FAF;--g4:#A432BB;--g5:#7B2D8E;--g6:#631757;--font-heading:'Quicksand',Calibri,sans-serif;--font-body:'Montserrat',Calibri,sans-serif}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:var(--font-body);color:var(--near-black);background:var(--near-white);font-size:.9rem;line-height:1.65}
+.gs{height:5px;background:linear-gradient(90deg,var(--g1),var(--g2),var(--g3),var(--g4),var(--g5),var(--g6))}
+.hero{position:relative;min-height:60vh;display:flex;align-items:center;justify-content:center;text-align:center;background:url('https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1600&q=80') center/cover}
+.hero::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(229,39,33,.42),rgba(191,31,121,.38),rgba(117,69,148,.45));z-index:1}
+.hero-c{position:relative;z-index:2;max-width:860px;padding:2rem}
+.hero-c img{height:44px;margin-bottom:1.5rem}
+.hero h1{font-family:var(--font-heading);font-weight:700;font-size:clamp(2rem,5vw,3.2rem);line-height:1.1;color:var(--white);text-shadow:0 2px 8px rgba(0,0,0,.4);margin-bottom:.5rem}
+.hero .sub{color:rgba(255,255,255,.95);font-size:1.1rem;font-weight:600;text-shadow:0 1px 4px rgba(0,0,0,.3)}
+.hero .dt{color:rgba(255,255,255,.7);font-size:.78rem;margin-top:.5rem}
+.hst{display:flex;gap:1.2rem;justify-content:center;margin-top:1.5rem;flex-wrap:wrap}
+.hs{background:rgba(255,255,255,.15);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:.7rem 1.1rem;min-width:110px}
+.hs .n{font-family:var(--font-heading);font-size:1.7rem;font-weight:700;color:var(--white);display:block}
+.hs .l{font-size:.6rem;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.8)}
+nav{position:sticky;top:0;z-index:100;background:var(--white);box-shadow:0 2px 12px rgba(0,0,0,.08);display:flex;gap:.4rem;padding:.55rem 1.5rem;overflow-x:auto}
+nav a{font-family:var(--font-heading);font-size:.7rem;font-weight:600;text-decoration:none;color:var(--gray);padding:.3rem .65rem;border-radius:20px;white-space:nowrap;transition:all .2s}
+nav a:hover{color:var(--magenta);background:var(--pink)}
+.ct{max-width:1100px;margin:0 auto;padding:0 1.5rem}
+section{padding:3rem 0}
+.sl{font-size:.63rem;text-transform:uppercase;letter-spacing:.2em;color:var(--gray);margin-bottom:.5rem}
+h2{font-family:var(--font-heading);font-weight:700;font-size:clamp(1.5rem,3.5vw,2.1rem);color:var(--near-black);margin-bottom:1.3rem}
+h2 span{background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+h3{font-family:var(--font-heading);font-weight:700;font-size:1.05rem;color:var(--purple)}
+.badge{display:inline-block;font-size:.58rem;font-weight:700;padding:.18rem .45rem;border-radius:8px;text-transform:uppercase;letter-spacing:.04em;vertical-align:middle}
+.b-imp{background:var(--red);color:var(--white)}.b-alta{background:var(--magenta);color:var(--white)}.b-media{background:var(--lavender);color:var(--purple)}.b-baja{background:#eee;color:var(--gray)}.b-ref{background:var(--near-black);color:var(--white)}
+/* TLDR */
+.tldr{background:linear-gradient(135deg,rgba(229,39,33,.08),rgba(191,31,121,.05),rgba(117,69,148,.08));border:2px solid var(--magenta);border-radius:16px;padding:1.8rem}
+.tldr h3{color:var(--red);font-size:1.2rem;margin-bottom:1rem}
+.tldr ol{padding-left:1.4rem}.tldr li{margin-bottom:.7rem;line-height:1.6}
+.tldr .r{font-size:.72rem;color:var(--gray);display:block;margin-top:.2rem}
+/* Quote */
+.q{border-left:3px solid var(--magenta);padding:.7rem 1rem;margin:.8rem 0;background:rgba(191,31,121,.04);border-radius:0 8px 8px 0;font-size:.82rem;font-style:italic;color:#444}
+.q cite{display:block;font-style:normal;font-size:.7rem;color:var(--gray);margin-top:.3rem}
+/* Action cards */
+.ag{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:1.2rem}
+.ac{background:var(--white);border-radius:14px;padding:1.4rem;border-left:4px solid;box-shadow:0 3px 16px rgba(0,0,0,.05);transition:transform .2s}
+.ac:hover{transform:translateY(-3px)}
+.ac:nth-child(1){border-color:var(--red)}.ac:nth-child(2){border-color:var(--magenta)}.ac:nth-child(3){border-color:var(--purple)}.ac:nth-child(4){border-color:var(--g3)}.ac:nth-child(5){border-color:var(--g5)}
+.ac h3{margin-bottom:.4rem}.ac .w{font-size:.82rem;color:#555;margin-bottom:.5rem}
+.ac .code{font-size:.78rem;background:var(--near-black);color:#e0e0e0;padding:.6rem .8rem;border-radius:8px;font-family:monospace;margin:.5rem 0;overflow-x:auto}
+.ac .ref{font-size:.72rem;color:var(--gray);margin-top:.5rem}.ac .ref a{color:var(--purple);text-decoration:none;font-weight:600}
+/* Table */
+.vt{width:100%;border-collapse:separate;border-spacing:0;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.vt thead{background:var(--gradient);color:var(--white)}
+.vt th{font-family:var(--font-heading);font-weight:600;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;padding:.7rem .6rem;text-align:left}
+.vt td{padding:.55rem .6rem;border-bottom:1px solid var(--lavender);font-size:.8rem;vertical-align:middle}
+.vt tr:last-child td{border-bottom:none}.vt tr:hover td{background:rgba(117,69,148,.04)}
+.vt .vw{font-family:var(--font-heading);font-weight:700;color:var(--near-black)}
+.vt .ch{font-size:.7rem;color:var(--gray)}.vt a{color:var(--magenta);text-decoration:none;font-weight:600}.vt a:hover{color:var(--red)}
+/* Contradictions */
+.contra{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0}
+.contra-card{background:var(--white);border-radius:12px;padding:1.2rem;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+.contra-card h4{font-family:var(--font-heading);font-size:.9rem;margin-bottom:.4rem}
+.contra-card.pro{border-top:3px solid #27ae60}.contra-card.con{border-top:3px solid var(--red)}
+.contra-card p{font-size:.8rem;color:#555}
+/* Warnings */
+.warn{background:var(--white);border-radius:12px;padding:1.2rem 1.2rem 1.2rem 3.5rem;position:relative;box-shadow:0 2px 10px rgba(0,0,0,.04);margin-bottom:.8rem}
+.warn::before{content:'';position:absolute;left:1.2rem;top:1.4rem;width:20px;height:20px;background:var(--red);border-radius:50%;opacity:.8}
+.warn h4{font-family:var(--font-heading);font-size:.9rem;margin-bottom:.3rem;color:var(--near-black)}
+.warn p{font-size:.8rem;color:#555}
+/* Use cases */
+.ucg{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.2rem}
+.uc{background:var(--white);border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+.uc-h{padding:.7rem 1rem;font-family:var(--font-heading);font-weight:700;font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--white)}
+.uc:nth-child(1) .uc-h{background:var(--red)}.uc:nth-child(2) .uc-h{background:var(--magenta)}.uc:nth-child(3) .uc-h{background:var(--purple)}
+.uc-b{padding:.8rem 1rem}.uc-b table{width:100%;font-size:.76rem}
+.uc-b th{text-align:left;color:var(--gray);font-weight:600;font-size:.65rem;text-transform:uppercase;padding:.25rem 0;border-bottom:1px solid var(--lavender)}
+.uc-b td{padding:.35rem 0;border-bottom:1px solid #f0f0f0}
+/* Skip */
+.skip{list-style:none;max-width:70ch}.skip li{padding:.5rem 0;border-bottom:1px solid #eee;font-size:.82rem;color:#555}
+.skip strong{color:var(--near-black)}
+/* Releases */
+.rel{display:flex;gap:.8rem;align-items:center;padding:.45rem 0;border-bottom:1px solid var(--lavender);font-size:.8rem}
+.rel .v{font-family:var(--font-heading);font-weight:700;color:var(--purple);min-width:60px}
+.rel .d{font-size:.7rem;color:var(--gray);min-width:55px}
+/* Creators */
+.cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:.8rem}
+.cc{background:var(--white);border-radius:10px;padding:1rem;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.cc h4{font-family:var(--font-heading);font-size:.9rem;margin-bottom:.2rem}
+.cc .s{font-size:.72rem;color:var(--magenta);font-weight:600}
+.cc p{font-size:.7rem;color:var(--gray);margin-top:.3rem}
+footer{background:var(--near-black);color:rgba(255,255,255,.7);text-align:center;padding:1.5rem;font-size:.75rem}
+footer img{height:28px;margin-bottom:.8rem}
+@media print{nav{display:none}.hero{min-height:auto;padding:2rem}section{padding:1.5rem 0}}
+@media(max-width:700px){.contra{grid-template-columns:1fr}.vt{font-size:.7rem}.vt th,.vt td{padding:.35rem}}
+</style>
+</head>
+<body>
+<div class="gs"></div>
+
+<header class="hero">
+<div class="hero-c">
+  <img src="Grabit_RBG_educcion_blanco.png" alt="Grabit -- Intelligent Vision">
+  <h1>Claude Code:<br>Que Ver, Que Implementar</h1>
+  <p class="sub">Briefing semanal con analisis NotebookLM</p>
+  <p class="dt">20-27 marzo 2026 &middot; 10 videos &middot; 783K views &middot; 8 transcripciones analizadas</p>
+  <div class="hst">
+    <div class="hs"><span class="n">5</span><span class="l">Acciones</span></div>
+    <div class="hs"><span class="n">5</span><span class="l">Releases</span></div>
+    <div class="hs"><span class="n">2</span><span class="l">Debates</span></div>
+    <div class="hs"><span class="n">4</span><span class="l">Warnings</span></div>
+  </div>
+</div>
+</header>
+
+<nav aria-label="Secciones">
+  <a href="#tldr">Acciones</a>
+  <a href="#impl">Implementar</a>
+  <a href="#rank">Ranking</a>
+  <a href="#debates">Debates</a>
+  <a href="#warn">Warnings</a>
+  <a href="#uc">Casos de uso</a>
+  <a href="#skip">Ignorar</a>
+  <a href="#rel">Releases</a>
+</nav>
+
+<div class="ct">
+
+<!-- TL;DR -->
+<section id="tldr">
+<div class="tldr">
+  <h3>5 cosas que hacer esta semana</h3>
+  <ol>
+    <li><strong>Usa Git como "save points"</strong> antes de cada cambio de agente. Un dev senior perdio su DB de produccion.<span class="r">Nate B Jones (106K views) - Seccion "Skill 1: Save Points"</span></li>
+    <li><strong>Crea/reescribe tu <code>claude.md</code></strong> como "employee handbook". Empieza con 3 lineas, anade cada vez que Claude falle.<span class="r">Nate B Jones (106K views) - Seccion "Skill 3: Standing Orders"</span></li>
+    <li><strong>Instala skills especializadas</strong> (Terraform, sales) en vez de usar Claude como generalista.<span class="r">DevOps (3.9K) + Zubair (16K views)</span></li>
+    <li><strong>Habilita Agent Teams</strong> con <code>CLAUDE_AGENT_TEAMS_ENABLED: true</code> en settings.local.json.<span class="r">Nate Herk (78K views) - Config setup + T-Mux</span></li>
+    <li><strong>Decide Code vs Cowork</strong> por tarea: Code=ingenieria, Cowork=admin.<span class="r">Brock Mesarich (14K views) - Decision framework</span></li>
+  </ol>
+</div>
+</section>
+
+<!-- IMPLEMENTAR -->
+<section id="impl">
+<p class="sl">Analisis NotebookLM con transcripciones</p>
+<h2><span>Que implementar</span> ahora</h2>
+<div class="ag">
+
+  <div class="ac">
+    <span class="badge b-imp">Critico</span>
+    <h3>Git Save Points</h3>
+    <div class="q">"Say your agent broke something and you couldn't get back to the version that worked... you're 3 hours deep in a conversation going in circles. This is one of the most common disasters in vibe coding in 2026."<cite>Nate B Jones - transcripcion</cite></div>
+    <p class="w"><code>git commit</code> antes de cada tarea compleja. Nunca dejes que un agente trabaje sin checkpoint.</p>
+    <p class="ref"><a href="https://www.youtube.com/watch?v=8lwnJZy4cO0">Video #3</a> (106K views) &middot; Seccion "Skill 1"</p>
+  </div>
+
+  <div class="ac">
+    <span class="badge b-imp">Quick win</span>
+    <h3>Rules File (claude.md)</h3>
+    <div class="q">"You don't sit down and write a perfect rules file. You start with almost nothing... then every time your agent does something wrong you add a line. Over a few weeks the file becomes a precise reflection of what your project needs."<cite>Nate B Jones - transcripcion</cite></div>
+    <p class="w">1) Crea CLAUDE.md con 3 lineas. 2) Anade cuando Claude falle. 3) Revisa semanalmente.</p>
+    <p class="ref"><a href="https://www.youtube.com/watch?v=8lwnJZy4cO0">Video #3</a> (106K views) &middot; Seccion "Skill 3: Standing Orders"</p>
+  </div>
+
+  <div class="ac">
+    <span class="badge b-alta">Alto impacto</span>
+    <h3>Agent Teams</h3>
+    <div class="code">// settings.local.json
+{ "CLAUDE_AGENT_TEAMS_ENABLED": true }</div>
+    <p class="w">Spawneo de agentes paralelos (frontend, backend, QA). Usa T-Mux para monitoring. Asigna <strong>file owners</strong> y activa Plan Approval Mode.</p>
+    <p class="ref"><a href="https://www.youtube.com/watch?v=vDVSGVpB2vc">Video #4</a> (78K views) &middot; Config + prompting + dos/don'ts</p>
+  </div>
+
+  <div class="ac">
+    <span class="badge b-alta">Multiplicador</span>
+    <h3>Skills Especializadas</h3>
+    <p class="w"><strong>Sales:</strong> 14 slash commands (<code>/sales-prospect</code>, <code>/sales-contact</code>, <code>/sales-outreach</code>) con PDF pipeline. <strong>DevOps:</strong> Skill Terraform de Anton Babenko con TFSec + TFLint integrados.</p>
+    <p class="ref"><a href="https://www.youtube.com/watch?v=JqXkPlX_4gQ">Video #8</a> (16K) + <a href="https://youtu.be/Hw1QQU2YtpY">Video #10</a> (3.9K)</p>
+  </div>
+
+  <div class="ac">
+    <span class="badge b-media">Avanzado</span>
+    <h3>Segundo Cerebro (Obsidian + Agent SDK)</h3>
+    <p class="w">4 componentes: <strong>Memory</strong> (markdown en Obsidian), <strong>Heartbeat</strong> (script Python cada 30min), <strong>Adapters</strong> (Slack), <strong>Skills</strong>. Usa Claude Agent SDK + SQLite para RAG local.</p>
+    <p class="ref"><a href="https://www.youtube.com/watch?v=XmweZ4fLkcI">Video #5</a> (70K views) &middot; "Four Magical Components"</p>
+  </div>
+
+</div>
+</section>
+
+<!-- RANKING -->
+<section id="rank">
+<p class="sl">Ordenado por views</p>
+<h2><span>Ranking</span> de videos</h2>
+<table class="vt">
+<thead><tr><th>#</th><th>Video</th><th>Canal</th><th>Views</th><th>Veredicto</th></tr></thead>
+<tbody>
+  <tr><td>1</td><td><a href="https://www.youtube.com/watch?v=mpALXah_PBg">Build & Sell with Claude Code</a></td><td>Nate Herk<br><span class="ch">443K subs</span></td><td class="vw">285,613</td><td><span class="badge b-ref">Referencia</span> No en NotebookLM (10h)</td></tr>
+  <tr><td>2</td><td><a href="https://www.youtube.com/watch?v=brLhhkUqcn4">Claude Code Essentials (12h)</a></td><td>freeCodeCamp<br><span class="ch">11M subs</span></td><td class="vw">135,806</td><td><span class="badge b-ref">Referencia</span> No en NotebookLM (12h)</td></tr>
+  <tr><td>3</td><td><a href="https://www.youtube.com/watch?v=8lwnJZy4cO0">Claude Code Wiped 2.5 Years of Data</a></td><td>Nate B Jones<br><span class="ch">127K subs</span></td><td class="vw">106,039</td><td><span class="badge b-imp">Imprescindible</span></td></tr>
+  <tr><td>4</td><td><a href="https://www.youtube.com/watch?v=vDVSGVpB2vc">How to Build Claude Agent Teams</a></td><td>Nate Herk<br><span class="ch">443K subs</span></td><td class="vw">77,862</td><td><span class="badge b-imp">Imprescindible</span></td></tr>
+  <tr><td>5</td><td><a href="https://www.youtube.com/watch?v=XmweZ4fLkcI">Safer OpenClaw Alternative</a></td><td>Cole Medin<br><span class="ch">175K subs</span></td><td class="vw">69,864</td><td><span class="badge b-alta">Alta</span></td></tr>
+  <tr><td>6</td><td><a href="https://www.youtube.com/watch?v=O1ICQworLVc">I Gave Claude Code My Whole Genome</a></td><td>Nick Saraev<br><span class="ch">264K subs</span></td><td class="vw">49,180</td><td><span class="badge b-baja">Skip</span></td></tr>
+  <tr><td>7</td><td><a href="https://www.youtube.com/watch?v=mhIAd5lVMag">3D Websites for $10K</a></td><td>AI Chris Lee</td><td class="vw">24,176</td><td><span class="badge b-media">Media</span></td></tr>
+  <tr><td>8</td><td><a href="https://www.youtube.com/watch?v=JqXkPlX_4gQ">$80K Sales Rep with Claude Code</a></td><td>Zubair Trabzada</td><td class="vw">16,213</td><td><span class="badge b-alta">Alta</span></td></tr>
+  <tr><td>9</td><td><a href="https://www.youtube.com/watch?v=grh7CMl960s">Claude Code vs Cowork Explained</a></td><td>Brock Mesarich<br><span class="ch">56K subs</span></td><td class="vw">14,389</td><td><span class="badge b-imp">Imprescindible</span></td></tr>
+  <tr><td>10</td><td><a href="https://youtu.be/Hw1QQU2YtpY">The Only Claude Skill for DevOps</a></td><td>AWS Fundamentals</td><td class="vw">3,922</td><td><span class="badge b-baja">Nicho</span></td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- DEBATES -->
+<section id="debates">
+<p class="sl">Detectados por NotebookLM</p>
+<h2><span>Debates</span> entre creadores</h2>
+
+<h3 style="margin-bottom:.8rem">Code vs Cowork: destinos opuestos</h3>
+<div class="contra">
+  <div class="contra-card pro">
+    <h4>"Cowork reemplazara a Code"</h4>
+    <p>Brock Mesarich argumenta que Cowork evoluciona rapido y podria reemplazar Code en 3-12 meses para la mayoria de tareas, gracias a su interface superior y sandbox seguro.</p>
+  </div>
+  <div class="contra-card con">
+    <h4>"Code es irreemplazable"</h4>
+    <p>Multiples videos enfatizan que Code ofrece terminal access, APIs, agent teams y control total de la maquina que un sandbox como Cowork no puede igualar.</p>
+  </div>
+</div>
+<p style="font-size:.82rem;color:var(--gray);margin-bottom:2rem"><strong>Veredicto:</strong> Usa ambos. Code para engineering, Cowork para admin. No son competidores.</p>
+
+<h3 style="margin-bottom:.8rem">OpenClaw: heroe o villano</h3>
+<div class="contra">
+  <div class="contra-card pro">
+    <h4>"El asistente AI del momento"</h4>
+    <p>Adopcion masiva, community marketplace con miles de extensiones. El standard de facto para asistentes personales AI.</p>
+  </div>
+  <div class="contra-card con">
+    <h4>"Security nightmare"</h4>
+    <p>Cole Medin lo describe como vulnerable: remote code execution, packages maliciosos en marketplace. Recomienda replicar su logica en Claude Code.</p>
+  </div>
+</div>
+<p style="font-size:.82rem;color:var(--gray)"><strong>Veredicto:</strong> NO uses OpenClaw directamente. Replica su logica (memory, heartbeat) en tu setup con Claude Code.</p>
+</section>
+
+<!-- WARNINGS -->
+<section id="warn">
+<p class="sl">Mencionados en 3+ videos</p>
+<h2><span>Warnings</span> comunes</h2>
+
+<div class="warn">
+  <h4>"Blast radius" de tareas grandes</h4>
+  <p>"Instead of asking for a massive redesign at once, give focused, medium-sized tasks and validate at each step." Regla: nunca toques mas de 3-5 archivos a la vez.</p>
+</div>
+<div class="warn">
+  <h4>Nunca pegues secrets en chat</h4>
+  <p>"Never paste secret keys, API tokens, or SSH credentials directly into a chat." Usa siempre <code>.env</code> + <code>.gitignore</code>.</p>
+</div>
+<div class="warn">
+  <h4>Context decay (~mensaje 30)</h4>
+  <p>"Around message 30 it just starts ignoring things. It rewrites code it already wrote. It feels like it forgot everything. Well it did." Sesiones cortas + commit + nueva sesion.</p>
+</div>
+<div class="warn">
+  <h4>Permisos que frenan el flow</h4>
+  <p>"Agents stopping constantly to ask for permissions." Pre-aprueba tools comunes en settings.json o usa Auto Mode (nuevo, 24 marzo).</p>
+</div>
+</section>
+
+<!-- USE CASES -->
+<section id="uc">
+<p class="sl">Extraidos de transcripciones</p>
+<h2><span>Casos de uso</span> concretos</h2>
+<div class="ucg">
+  <div class="uc">
+    <div class="uc-h">Negocio</div>
+    <div class="uc-b"><table>
+      <tr><th>Caso</th><th>Implementacion</th><th>Video</th></tr>
+      <tr><td>Sales rep $80K</td><td>/sales-prospect + pipeline PDF</td><td>Zubair (16K)</td></tr>
+      <tr><td>Webs 3D $10K</td><td>Nano Banana 2 + Three.js + Vercel</td><td>Chris Lee (24K)</td></tr>
+      <tr><td>Morning briefing</td><td>Cowork scheduled task + connectors</td><td>Brock (14K)</td></tr>
+    </table></div>
+  </div>
+  <div class="uc">
+    <div class="uc-h">Ingenieria</div>
+    <div class="uc-b"><table>
+      <tr><th>Caso</th><th>Implementacion</th><th>Video</th></tr>
+      <tr><td>Agent teams QA</td><td>CLAUDE_AGENT_TEAMS + T-Mux</td><td>Nate Herk (78K)</td></tr>
+      <tr><td>Terraform IaC</td><td>Skill Babenko + TFSec + TFLint</td><td>DevOps (3.9K)</td></tr>
+      <tr><td>Personal AI safer</td><td>Claude Agent SDK + Obsidian</td><td>Cole Medin (70K)</td></tr>
+    </table></div>
+  </div>
+  <div class="uc">
+    <div class="uc-h">Productividad</div>
+    <div class="uc-b"><table>
+      <tr><th>Caso</th><th>Implementacion</th><th>Video</th></tr>
+      <tr><td>Segundo cerebro</td><td>Heartbeat 30min + Obsidian memory</td><td>Cole Medin (70K)</td></tr>
+      <tr><td>Bridge apps</td><td>Zapier MCP server</td><td>Brock (14K)</td></tr>
+      <tr><td>Genomic health</td><td>genome.txt + ClinVar + PharmGKB</td><td>Saraev (49K)</td></tr>
+    </table></div>
+  </div>
+</div>
+</section>
+
+<!-- SKIP -->
+<section id="skip">
+<p class="sl">Ahorra tiempo</p>
+<h2><span>Que ignorar</span></h2>
+<ul class="skip">
+  <li><strong>Video del genoma (#6, 49K)</strong> - Fascinante pero no accionable. Privacy trade-offs significativos al subir datos geneticos a LLMs.</li>
+  <li><strong>freeCodeCamp completo (#2, 136K)</strong> - 12 horas. Usalo como enciclopedia por capitulos, no como curso lineal.</li>
+  <li><strong>Computer Use</strong> - Research preview, inestable para produccion. Esperar 2-3 semanas.</li>
+  <li><strong>Voice Mode</strong> - Funcional pero no cambia workflows. Nice-to-have.</li>
+</ul>
+</section>
+
+<!-- RELEASES -->
+<section id="rel">
+<p class="sl">Claude Code esta semana</p>
+<h2><span>5 Releases</span> en 7 dias</h2>
+<div style="max-width:550px">
+  <div class="rel"><span class="v">v2.1.85</span><span class="d">26 Mar</span><span>MCP env vars, conditional hooks, transcript timestamps</span></div>
+  <div class="rel"><span class="v">v2.1.84</span><span class="d">26 Mar</span><span>PowerShell preview, startup +30ms, MCP desc cap 2KB</span></div>
+  <div class="rel"><span class="v">v2.1.83</span><span class="d">25 Mar</span><span>Plugin cache startup, search transcripts</span></div>
+  <div class="rel"><span class="v">v2.1.81</span><span class="d">21 Mar</span><span>--bare flag, mobile permission relays</span></div>
+  <div class="rel"><span class="v">v2.1.80</span><span class="d">20 Mar</span><span>Statusline rate limits, -80MB RAM repos grandes</span></div>
+</div>
+<p style="margin-top:.8rem;font-size:.8rem;color:var(--gray)">Accion: <code>claude update</code> a v2.1.85</p>
+</section>
+
+</div>
+
+<div class="gs"></div>
+<footer>
+  <img src="Grabit_RBG_educcion_blanco.png" alt="Grabit -- Intelligent Vision">
+  <p>Generado por Grabit &middot; yt-summary skill + NotebookLM &middot; Marzo 2026</p>
+  <p style="margin-top:.3rem;font-size:.65rem;color:rgba(255,255,255,.4)">Notebook ID: dbeb5e95-2251-4a8d-a411-eba0c79e82e3 &middot; 8 transcripciones indexadas</p>
+</footer>
+</body>
+</html>
